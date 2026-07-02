@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Cricket</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #eef4ff;
+  color: #1d3557;
+}
+
+.container {
+  max-width: 700px;
+  margin: 50px auto;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 42px;
+}
+
+.card {
+  background: white;
+  margin-top: 20px;
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.15);
+}
+
+button {
+  background: #1d3557;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  margin: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #457b9d;
+}
+
+button:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
+input {
+  padding: 10px;
+  width: 120px;
+  margin: 10px;
+  font-size: 16px;
+  border: 1px solid #999;
+  border-radius: 6px;
+}
+
+p {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+.out {
+  color: #c1121f;
+}
+
+.win {
+  color: #007f5f;
+}
+</style>
+
+</head>
+
+<body>
+
+<main class="container">
+
+<h1>Computer Cricket</h1>
+
+<button id="start">Start Game</button>
+
+<section id="tossArea" class="card hidden">
+    <h2>Choose Heads or Tails for Toss</h2>
+    <button id="heads">Heads</button>
+    <button id="tails">Tails</button>
+</section>
+
+<h2 id="tsResult">Press Start Game to begin.</h2>
+
+<section id="gameArea" class="card hidden"></section>
+
+</main>
+
+<script>
+
+function getrandomnum(min,max){
+    return Math.floor(Math.random()*(max-min)+min);
+}
+
+function getrandomtoss(){
+    return Math.floor(Math.random()*2);
+}
+
+let startBtn=document.getElementById("start");
+let tossArea=document.getElementById("tossArea");
+let tossResult=document.getElementById("tsResult");
+let gameArea=document.getElementById("gameArea");
+let heads=document.getElementById("heads");
+let tails=document.getElementById("tails");
+
+let toss;
+let playerScore=0;
+let computerScore=0;
+let playerBattedFirst=false;
+let computerBattedFirst=false;
+
+startBtn.addEventListener("click",startGame);
+
+function startGame(){
+
+    toss=getrandomtoss();
+
+    playerScore=0;
+    computerScore=0;
+
+    playerBattedFirst=false;
+    computerBattedFirst=false;
+
+    startBtn.classList.add("hidden");
+
+    tossArea.classList.remove("hidden");
+
+    gameArea.classList.add("hidden");
+    gameArea.innerHTML="";
+
+    heads.disabled=false;
+    tails.disabled=false;
+
+    tossResult.textContent="Choose Heads or Tails.";
+}
+
+heads.addEventListener("click",function(){
+    handleToss(0,"Heads","Tails");
+});
+
+tails.addEventListener("click",function(){
+    handleToss(1,"Tails","Heads");
+});
+
+function handleToss(playerChoice,playerText,computerText){
+
+    heads.disabled=true;
+    tails.disabled=true;
+
+    tossArea.classList.add("hidden");
+
+    if(toss===playerChoice){
+
+        tossResult.textContent=playerText+"! You won the toss.";
+
+        showChoiceButtons();
+
+    }else{
+
+        tossResult.textContent=computerText+"! You lost the toss.";
+
+        computerChooses();
+
+    }
+
+}
+
+function showChoiceButtons(){
+
+    gameArea.classList.remove("hidden");
+
+    gameArea.innerHTML=`
+        <h2>Choose Batting or Bowling</h2>
+
+        <button id="battingBtn">Batting</button>
+
+        <button id="bowlingBtn">Bowling</button>
+    `;
+
+    document.getElementById("battingBtn").addEventListener("click",function(){
+
+        playerBattedFirst=true;
+
+        startBatting();
+
+    });
+
+    document.getElementById("bowlingBtn").addEventListener("click",function(){
+
+        computerBattedFirst=true;
+
+        startBowling();
+
+    });
+
+}
+
+function computerChooses(){
+
+    let choice=getrandomtoss();
+
+    if(choice===0){
+
+        tossResult.textContent+=" Computer chose Batting.";
+
+        computerBattedFirst=true;
+
+        startBowling();
+
+    }
+
+    else{
+
+        tossResult.textContent+=" Computer chose Bowling.";
+
+        playerBattedFirst=true;
+
+        startBatting();
+
+    }
+
+}
+
+function createPlayScreen(title){
+
+    gameArea.classList.remove("hidden");
+
+    gameArea.innerHTML=`
+        <h2>${title}</h2>
+
+        <label>Enter a number between 1-6:</label>
+
+        <br>
+
+        <input id="numberInput" type="number" min="1" max="6">
+
+        <button id="submitBtn">Submit</button>
+
+        <p id="resultPara"></p>
+
+        <p id="scorePara"></p>
+    `;
+
+    return{
+
+        input:document.getElementById("numberInput"),
+
+        submit:document.getElementById("submitBtn"),
+
+        resultPara:document.getElementById("resultPara"),
+
+        scorePara:document.getElementById("scorePara")
+
+    };
+
+}
+
+function startBatting(){
+
+    let screen=createPlayScreen("Batting Started");
+
+    screen.submit.addEventListener("click",function(){
+
+        let myNumber=Number(screen.input.value);
+
+        let computerNumber=getrandomnum(1,7);
+
+        if(myNumber<1||myNumber>6){
+
+            screen.resultPara.textContent="Wrong input. Enter number between 1-6.";
+
+            return;
+
+        }
+
+        if(myNumber===computerNumber){
+
+            screen.resultPara.className="out";
+
+            screen.resultPara.textContent="You are OUT! Your final score is "+playerScore+".";
+
+            screen.submit.disabled=true;
+
+            let nextBtn=document.createElement("button");
+
+            nextBtn.textContent=playerBattedFirst?"Start Bowling":"Show Result";
+
+            gameArea.appendChild(nextBtn);
+
+            nextBtn.addEventListener("click",function(){
+
+                if(playerBattedFirst){
+
+                    startBowling();
+
+                }
+
+                else{
+
+                    showWinner();
+
+                }
+
+            });
+
+        }
+
+        else{
+
+            playerScore+=myNumber;
+
+            screen.resultPara.textContent="You scored "+myNumber+". Computer bowled "+computerNumber+".";
+
+            screen.scorePara.textContent="Your total score: "+playerScore;
+
+        }
+
+        screen.input.value="";
+
+    });
+
+}
+
+function startBowling(){
+
+    let screen=createPlayScreen("Bowling Started");
+
+    screen.submit.addEventListener("click",function(){
+
+        let myNumber=Number(screen.input.value);
+
+        let computerNumber=getrandomnum(1,7);
+
+        if(myNumber<1||myNumber>6){
+
+            screen.resultPara.textContent="Wrong input. Enter number between 1-6.";
+
+            return;
+
+        }
+
+        if(myNumber===computerNumber){
+
+            screen.resultPara.className="out";
+
+            screen.resultPara.textContent="Computer is OUT! Computer's final score is "+computerScore+".";
+
+            screen.submit.disabled=true;
+
+            let nextBtn=document.createElement("button");
+
+            nextBtn.textContent=computerBattedFirst?"Start Batting":"Show Result";
+
+            gameArea.appendChild(nextBtn);
+
+            nextBtn.addEventListener("click",function(){
+
+                if(computerBattedFirst){
+
+                    startBatting();
+
+                }
+
+                else{
+
+                    showWinner();
+
+                }
+
+            });
+
+        }
+
+        else{
+
+            computerScore+=computerNumber;
+
+            screen.resultPara.textContent="You bowled "+myNumber+". Computer scored "+computerNumber+".";
+
+            screen.scorePara.textContent="Computer total score: "+computerScore;
+
+        }
+
+        screen.input.value="";
+
+    });
+
+}
+
+function showWinner(){
+
+    let resultText="";
+
+    if(playerScore>computerScore){
+
+        resultText="You WON! Your score: "+playerScore+", Computer score: "+computerScore;
+
+    }
+
+    else if(computerScore>playerScore){
+
+        resultText="Computer WON! Computer score: "+computerScore+", Your score: "+playerScore;
+
+    }
+
+    else{
+
+        resultText="Match Draw! Both scored "+playerScore;
+
+    }
+
+    gameArea.innerHTML=`
+
+        <h2 class="win">${resultText}</h2>
+
+        <button id="restartBtn">Restart Game</button>
+
+    `;
+
+    document.getElementById("restartBtn").addEventListener("click",function(){
+
+        startBtn.classList.remove("hidden");
+
+        tossResult.textContent="Press Start Game to begin.";
+
+        gameArea.classList.add("hidden");
+
+        gameArea.innerHTML="";
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
